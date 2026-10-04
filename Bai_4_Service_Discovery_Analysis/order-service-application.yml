@@ -1,0 +1,39 @@
+# ===================================================================
+# Cấu hình Eureka Client & Load Balancer cho order-service
+# Giúp order-service tự động phát hiện và cân bằng tải qua 4 instances của restaurant-service
+# ===================================================================
+
+spring:
+  application:
+    name: order-service
+
+server:
+  port: 8086
+
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address:${server.address:localhost}}:${server.port}:${random.value}
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+    # Tần suất lấy danh sách instance mới nhất từ Eureka Server (mặc định 30 giây, rút ngắn xuống 10s để cập nhật nhanh khi scale)
+    registry-fetch-interval-seconds: 10
+
+# Cấu hình Spring Cloud LoadBalancer
+spring.cloud.loadbalancer:
+  ribbon:
+    enabled: false # Tắt Ribbon cũ, dùng Spring Cloud LoadBalancer chuẩn mới
+  cache:
+    ttl: 5s # Thời gian sống của cache instance tại client, đảm bảo nhận diện node mới/chết nhanh chóng
+
+# Cấu hình Timeout và Retry cho OpenFeign / Resilience4j
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 2000
+        readTimeout: 3000
+        loggerLevel: full

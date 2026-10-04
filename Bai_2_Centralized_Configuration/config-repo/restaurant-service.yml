@@ -1,0 +1,27 @@
+# Cấu hình chuẩn cho restaurant-service trong Centralized Config Repository
+# Tên file quy ước: restaurant-service.yml (ánh xạ với spring.application.name = restaurant-service)
+
+spring:
+  datasource:
+    url: jdbc:mysql://foodx-cluster.local:3306/restaurants_db
+    username: restaurant_service_user
+    # Mật khẩu đã được mã hóa theo chuẩn Spring Cloud Config Cipher
+    # Lưu ý: Chuỗi mã hóa đặt trong dấu nháy đơn để tránh lỗi cú pháp YAML
+    password: '{cipher}AQA7b92KxLfNm84QeZ1uP0oRstVwXyZ3AbCdEfGhIjKlMnOpQrStUvWxYz1234567890=='
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+server:
+  port: 8085
+
+# Cấu hình Actuator để hỗ trợ refresh động (Spring Cloud Bus / /actuator/refresh)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh

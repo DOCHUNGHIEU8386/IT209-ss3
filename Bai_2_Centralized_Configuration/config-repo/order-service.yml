@@ -1,0 +1,26 @@
+# Cấu hình chuẩn cho order-service trong Centralized Config Repository
+# Tên file quy ước: order-service.yml (ánh xạ với spring.application.name = order-service)
+
+spring:
+  datasource:
+    url: jdbc:mysql://foodx-cluster.local:3306/orders_db
+    username: order_service_user
+    # Mật khẩu đã được mã hóa an toàn theo chuẩn Spring Cloud Config Cipher
+    password: '{cipher}AQBlk82N90VcxPlmn48QaZopL991KaBvCx0192384756abcdefgh1234567890=='
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+server:
+  port: 8086
+
+# Cấu hình Actuator phục vụ giám sát và Dynamic Configuration Refresh
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh

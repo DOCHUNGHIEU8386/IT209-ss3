@@ -1,0 +1,45 @@
+# ===================================================================
+# Cấu hình Eureka Client CHUẨN XÁC cho restaurant-service
+# Đã khắc phục triệt để lỗi đặt tên, lỗi URL defaultZone và hỗ trợ scale đa instance
+# ===================================================================
+
+spring:
+  application:
+    # 1. Đổi từ PascalCase 'RestaurantService' sang kebab-case 'restaurant-service'
+    # Đảm bảo đồng bộ với order-service, payment-service, Gateway và LoadBalancer
+    name: restaurant-service
+
+server:
+  # Cổng ngẫu nhiên hoặc chỉ định động khi scale nhiều instance trên cùng host
+  # port: 0 # (sử dụng 0 nếu chạy nhiều instance trên cùng 1 server vật lý)
+  port: 8085
+
+eureka:
+  instance:
+    # Định danh duy nhất cho từng instance khi scale (tránh việc 4 instance ghi đè nhau trên Eureka Server)
+    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address:${server.address:localhost}}:${server.port}:${random.value}
+    # Sử dụng địa chỉ IP thực tế thay vì hostname của máy chủ/container để các service khác gọi chính xác
+    prefer-ip-address: true
+    # Chu kỳ gửi heartbeat báo hiệu còn sống lên Eureka Server (mặc định 30 giây)
+    lease-renewal-interval-in-seconds: 10
+    # Thời gian tối đa Eureka Server chờ heartbeat trước khi đánh dấu hết hạn (mặc định 90 giây)
+    lease-expiration-duration-in-seconds: 30
+
+  client:
+    # 2. Khai báo rõ ràng hai thuộc tính quan trọng tránh hiểu lầm khi đọc code
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      # 3. Đã bổ sung dấu gạch chéo '/' ở cuối URL. 
+      # Nếu thiếu '/', Eureka Client sẽ ghép URL thành .../eurekaapps/... dẫn tới lỗi 404 Not Found!
+      defaultZone: http://eureka-server:8761/eureka/
+
+# Cấu hình actuator cho health check
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
